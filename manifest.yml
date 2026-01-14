@@ -5,7 +5,7 @@ applications:
     disk_quota: 2G
     instances: 1
     
-    # Use multi-buildpack to build frontend (Node) then run backend (Python)
+    # Multi-buildpack: Node.js builds frontend, Python runs backend
     buildpacks:
       - nodejs_buildpack
       - python_buildpack
@@ -41,17 +41,20 @@ applications:
       RUNTIME_LOG_DIR: /home/vcap/app/logs
       RUNTIME_FEEDBACK_DIR: /home/vcap/app/feedback
       
-      # Feature flags - adjust as needed
-      FEATURE_TOOLS_ENABLED: "true"
+      # Feature flags - disable tools since stdio MCP servers don't work on CF
+      FEATURE_TOOLS_ENABLED: "false"
       FEATURE_MARKETPLACE_ENABLED: "false"
       FEATURE_FILES_PANEL_ENABLED: "true"
       FEATURE_AGENT_MODE_AVAILABLE: "true"
       
       # Disable mock services for production
-      USE_MOCK_S3: "false"
+      USE_MOCK_S3: "true"
       MOCK_RAG: "false"
       
-      # Frontend was pre-built by nodejs_buildpack
+      # Use cloud.gov-specific MCP config (empty, no stdio servers)
+      MCP_CONFIG_FILE: "mcp-cloudgov.json"
+      
+      # Frontend built by nodejs_buildpack
       USE_NEW_FRONTEND: "true"
 
     # Services to bind (uncomment and configure as needed)

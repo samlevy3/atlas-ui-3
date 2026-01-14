@@ -52,9 +52,10 @@ __pycache__/
 venv/
 ENV/
 
-# Build artifacts (frontend dist is needed)
+# Build artifacts (frontend/dist is NEEDED - don't exclude it!)
 *.egg-info/
-dist/
+# Don't exclude frontend/dist - it contains the built frontend
+# dist/
 build/
 
 # Docker files (not needed for CF)
