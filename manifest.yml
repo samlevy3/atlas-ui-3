@@ -1,0 +1,64 @@
+---
+applications:
+  - name: atlas-ui
+    memory: 1G
+    disk_quota: 2G
+    instances: 1
+    
+    # Use multi-buildpack to build frontend (Node) then run backend (Python)
+    buildpacks:
+      - nodejs_buildpack
+      - python_buildpack
+    
+    # Command to start the application
+    command: cd backend && python main.py
+    
+    # Health check configuration
+    health-check-type: http
+    health-check-http-endpoint: /api/health
+    timeout: 180
+    
+    # Environment variables
+    env:
+      # Python configuration
+      PYTHONPATH: /home/vcap/app
+      
+      # Enable debug mode (skips authentication)
+      DEBUG_MODE: "true"
+      
+      # Bind to cloud.gov assigned port (CF sets PORT automatically)
+      ATLAS_HOST: "0.0.0.0"
+      
+      # Logging
+      LOG_LEVEL: "INFO"
+      ENVIRONMENT: "production"
+      
+      # Config paths (relative to app root)
+      APP_CONFIG_DEFAULTS: /home/vcap/app/config/defaults
+      APP_CONFIG_OVERRIDES: /home/vcap/app/config/overrides
+      
+      # Runtime directories
+      RUNTIME_LOG_DIR: /home/vcap/app/logs
+      RUNTIME_FEEDBACK_DIR: /home/vcap/app/feedback
+      
+      # Feature flags - adjust as needed
+      FEATURE_TOOLS_ENABLED: "true"
+      FEATURE_MARKETPLACE_ENABLED: "false"
+      FEATURE_FILES_PANEL_ENABLED: "true"
+      FEATURE_AGENT_MODE_AVAILABLE: "true"
+      
+      # Disable mock services for production
+      USE_MOCK_S3: "false"
+      MOCK_RAG: "false"
+      
+      # Frontend was pre-built by nodejs_buildpack
+      USE_NEW_FRONTEND: "true"
+
+    # Services to bind (uncomment and configure as needed)
+    # services:
+    #   - atlas-s3-bucket
+    #   - atlas-secrets
+
+    # Routes (adjust domain as needed)
+    # routes:
+    #   - route: atlas-ui.app.cloud.gov

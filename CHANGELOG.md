@@ -7,6 +7,11 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 ## [Unreleased]
 
 ### PR #TBD - 2026-01-13
+- **Cloud.gov Deployment**: Add configuration files for deploying Atlas UI to cloud.gov (Cloud Foundry).
+- **Files**: Added `manifest.yml`, `Procfile`, `runtime.txt`, `.profile`, and `.cfignore` for Cloud Foundry deployment.
+- **Docs**: Added comprehensive cloud.gov deployment guide at `docs/getting-started/cloud-gov-deployment.md`.
+
+### PR #TBD - 2026-01-13
 - **Fix**: Fix file upload registration issue where files attached in one WebSocket connection were not visible in subsequent chat messages. The issue was caused by each ChatService instance creating its own session repository, preventing session sharing across connections.
 - **Architecture**: Created a shared InMemorySessionRepository in AppFactory that is passed to all ChatService instances, ensuring sessions and attached files are properly shared across WebSocket connections.
 

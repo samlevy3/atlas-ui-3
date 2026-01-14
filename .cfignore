@@ -1,0 +1,93 @@
+# Cloud Foundry ignore file
+# Files and directories to exclude from cf push
+
+# Git
+.git/
+.gitignore
+
+# Development files
+.env
+.env.*
+!.env.example
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Test files and directories
+test/
+test_e2e/
+tests/
+*.test.js
+*.test.ts
+*.spec.js
+*.spec.ts
+__tests__/
+coverage/
+.coverage
+htmlcov/
+.pytest_cache/
+playwright-report/
+
+# Documentation (keep essential docs only)
+docs/archive/
+docs/planning/
+
+# Mock servers (not needed in production)
+mocks/
+
+# Node modules (will be installed by buildpack)
+node_modules/
+
+# Python cache
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+.venv/
+venv/
+ENV/
+
+# Build artifacts (frontend dist is needed)
+*.egg-info/
+dist/
+build/
+
+# Docker files (not needed for CF)
+Dockerfile
+Dockerfile-test
+docker-compose.yml
+
+# CI/CD configuration
+.gitlab-ci.yml
+.github/
+
+# Agent scripts (development only)
+agent_start.sh
+_agent_setup.sh
+ps_agent_start.ps1
+run_test_shortcut.sh
+
+# Example configs (use overrides instead)
+config/mcp-example-configs/
+
+# Security scanning
+.bandit
+.semgrep.yml
+.codeqlignore
+
+# Logs
+logs/
+*.log
+
+# DevContainer
+.devcontainer/
+
+# Gemini/Claude instructions (development aids)
+.gemini/
+CLAUDE.md
+GEMINI.md
