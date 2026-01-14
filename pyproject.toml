@@ -2,7 +2,7 @@
 name = "atlas-ui-3-11"
 version = "0.1.0"
 description = "A FastAPI-based chat UI application"
-requires-python = ">=3.11"
+requires-python = ">=3.12"
 dependencies = [
     "bs4",
     "fastapi",
