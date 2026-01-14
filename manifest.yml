@@ -1,67 +1,34 @@
 ---
 applications:
   - name: atlas-ui
+    path: frontend
+    memory: 256M
+    disk_quota: 1G
+    instances: 1
+    buildpacks:
+      - nodejs_buildpack
+    # Typical Node buildpack expects a start script in frontend/package.json
+    # command: npm start
+    routes:
+      - route: atlas-ui.app.cloud.gov
+
+  - name: atlas-api
+    path: backend
     memory: 1G
     disk_quota: 2G
     instances: 1
-    
-    # Multi-buildpack: Node.js builds frontend, Python runs backend
     buildpacks:
-      - nodejs_buildpack
       - python_buildpack
-    
-    # Command to start the application
-    command: cd backend && python main.py
-    
-    # Health check configuration
+    # Prefer a production web server if you can (example):
+    # command: gunicorn -b 0.0.0.0:$PORT main:app
+    command: python main.py
     health-check-type: http
     health-check-http-endpoint: /api/health
     timeout: 180
-    
-    # Environment variables
     env:
-      # Python configuration
-      PYTHONPATH: /home/vcap/app
-      
-      # Enable debug mode (skips authentication)
-      DEBUG_MODE: "true"
-      
-      # Bind to cloud.gov assigned port (CF sets PORT automatically)
-      ATLAS_HOST: "0.0.0.0"
-      
-      # Logging
       LOG_LEVEL: "INFO"
       ENVIRONMENT: "production"
-      
-      # Config paths (relative to app root)
-      APP_CONFIG_DEFAULTS: /home/vcap/app/config/defaults
-      APP_CONFIG_OVERRIDES: /home/vcap/app/config/overrides
-      
-      # Runtime directories
-      RUNTIME_LOG_DIR: /home/vcap/app/logs
-      RUNTIME_FEEDBACK_DIR: /home/vcap/app/feedback
-      
-      # Feature flags - disable tools since stdio MCP servers don't work on CF
-      FEATURE_TOOLS_ENABLED: "false"
-      FEATURE_MARKETPLACE_ENABLED: "false"
-      FEATURE_FILES_PANEL_ENABLED: "true"
-      FEATURE_AGENT_MODE_AVAILABLE: "true"
-      
-      # Disable mock services for production
-      USE_MOCK_S3: "true"
-      MOCK_RAG: "false"
-      
-      # Use cloud.gov-specific MCP config (empty, no stdio servers)
-      MCP_CONFIG_FILE: "mcp-cloudgov.json"
-      
-      # Frontend built by nodejs_buildpack
-      USE_NEW_FRONTEND: "true"
-
-    # Services to bind (uncomment and configure as needed)
-    # services:
-    #   - atlas-s3-bucket
-    #   - atlas-secrets
-
-    # Routes (adjust domain as needed)
-    # routes:
-    #   - route: atlas-ui.app.cloud.gov
+      DEBUG_MODE: "false"
+      # Don’t set PORT; CF sets it.
+    routes:
+      - route: atlas-api.app.cloud.gov

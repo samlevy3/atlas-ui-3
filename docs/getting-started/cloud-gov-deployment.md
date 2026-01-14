@@ -18,18 +18,51 @@ The deployment uses these files:
 | File | Purpose |
 |------|---------|
 | `manifest.yml` | Cloud Foundry deployment configuration |
-| `package.json` (root) | Triggers frontend build via nodejs_buildpack |
 | `Procfile` | Specifies the startup command |
 | `runtime.txt` | Specifies Python version |
 | `.profile` | Pre-start script for directory setup |
-| `.cfignore` | Files to exclude from deployment |
-| `config/defaults/mcp-cloudgov.json` | Empty MCP config (stdio servers don't work on CF) |
 
-## How It Works
+## Pre-Deployment Setup
 
-The deployment uses two buildpacks:
-1. **nodejs_buildpack** - Runs first, executes `heroku-postbuild` script from root `package.json` which builds the frontend in `frontend/dist/`
-2. **python_buildpack** - Runs second, installs Python dependencies and runs the backend
+### 1. Build the Frontend Locally
+
+The multi-buildpack approach builds the frontend during deployment, but you can also pre-build:
+
+```bash
+cd frontend
+npm install
+npm run build
+cd ..
+```
+
+### 2. Configure Environment Variables
+
+Update `manifest.yml` with your API keys and configuration. For sensitive values, use cloud.gov user-provided services:
+
+```bash
+# Create a user-provided service for secrets
+cf cups atlas-secrets -p '{"OPENAI_API_KEY":"sk-xxx","ANTHROPIC_API_KEY":"xxx"}'
+```
+
+Then uncomment the `services` section in `manifest.yml`:
+```yaml
+services:
+  - atlas-secrets
+```
+
+### 3. Configure S3 Storage (Optional)
+
+If you need S3 storage for file uploads:
+
+```bash
+# Create S3 service
+cf create-service s3 basic atlas-s3-bucket
+
+# Bind to your app (or add to manifest.yml services section)
+cf bind-service atlas-ui atlas-s3-bucket
+```
+
+Update your environment variables to use the bound service credentials (available via `VCAP_SERVICES`).
 
 ## Deployment
 
@@ -38,8 +71,6 @@ The deployment uses two buildpacks:
 ```bash
 cf push
 ```
-
-That's it! The buildpacks handle everything.
 
 ### Deploy with Specific Settings
 
@@ -68,35 +99,6 @@ cf logs atlas-ui --recent
 cf logs atlas-ui
 ```
 
-## Pre-Deployment Configuration (Optional)
-
-### Configure Secrets
-
-For sensitive values like API keys, use cloud.gov user-provided services instead of putting them in `manifest.yml`:
-
-```bash
-# Create a user-provided service for secrets
-cf cups atlas-secrets -p '{"OPENAI_API_KEY":"sk-xxx","ANTHROPIC_API_KEY":"xxx"}'
-```
-
-Then uncomment the `services` section in `manifest.yml`:
-```yaml
-services:
-  - atlas-secrets
-```
-
-### Configure S3 Storage
-
-If you need S3 storage for file uploads:
-
-```bash
-# Create S3 service
-cf create-service s3 basic atlas-s3-bucket
-
-# Bind to your app (or add to manifest.yml services section)
-cf bind-service atlas-ui atlas-s3-bucket
-```
-
 ## Environment Variables
 
 ### Required Variables
@@ -106,36 +108,17 @@ Set these in `manifest.yml` or via `cf set-env`:
 | Variable | Description |
 |----------|-------------|
 | `OPENAI_API_KEY` | OpenAI API key (or other LLM provider keys) |
-| `DEBUG_MODE` | Set to `false` for production (or `true` to skip auth) |
+| `DEBUG_MODE` | Set to `false` for production |
 | `LOG_LEVEL` | Logging level (`INFO` recommended) |
 
 ### Optional Variables
 
 | Variable | Default | Description |
 |----------|---------|-------------|
-| `FEATURE_TOOLS_ENABLED` | `false` | Enable MCP tools (see limitations below) |
+| `FEATURE_TOOLS_ENABLED` | `true` | Enable MCP tools |
 | `FEATURE_AGENT_MODE_AVAILABLE` | `true` | Enable agent mode |
 | `FEATURE_MARKETPLACE_ENABLED` | `false` | Enable marketplace |
 | `BACKEND_PUBLIC_URL` | - | Public URL for file access |
-| `MCP_CONFIG_FILE` | `mcp.json` | MCP configuration file name |
-
-## MCP Tools Limitation
-
-**Important**: Stdio-based MCP servers (those using `command` in mcp.json) do NOT work on cloud.gov. This is because Cloud Foundry's container environment has issues with spawning Python subprocesses due to shared library path problems.
-
-The default cloud.gov deployment uses `MCP_CONFIG_FILE=mcp-cloudgov.json` which is an empty configuration.
-
-**Workarounds**:
-1. **Use HTTP/SSE-based MCP servers**: Deploy your MCP servers as separate cloud.gov apps or external services, then configure them with `url` instead of `command`:
-   ```json
-   {
-     "my-server": {
-       "url": "https://my-mcp-server.app.cloud.gov/sse",
-       "groups": ["users"]
-     }
-   }
-   ```
-2. **Disable tools**: Set `FEATURE_TOOLS_ENABLED=false` (current default)
 
 ## Using Secrets (Recommended)
 
